@@ -1,0 +1,8 @@
+parametro,valor,unidad,comentario
+Líneas de producción,1.0,línea,"Realiza embotellado y etiquetado, acoplados o desacoplados"
+Capacidad de la línea por período,84.0,horas,Tiempo disponible para producción y set-ups
+Períodos del horizonte,3.0,períodos,Coinciden con las etapas del árbol de escenarios
+Estanques intermedios disponibles,20.0,estanques,Número máximo utilizable en cada período
+Capacidad de cada estanque,10000.0,litros,Un estanque alimenta la línea de embotellado
+Tamaño de botella (todos los vinos),0.75,litros,≈ 13.333 botellas por estanque
+Subutilización máxima de un estanque,1.0,fracción,100%: no se exige uso mínimo del estanque

@@ -1,0 +1,47 @@
+Sobre la base de las conclusiones del análisis exploratorio (Sección~\ref{sec:s6}), este capítulo selecciona y justifica la metodología de Investigación Operativa más adecuada para el problema, y formula el modelo de optimización estocástica multietapa que representa las decisiones de embotellado y etiquetado bajo incertidumbre en la demanda.
+
+\section{Selección y Justificación de Metodologías de Investigación Operativa\label{sec:s7}}
+
+La estrategia de modelación debe responder de forma precisa a las propiedades de los datos y a la realidad operacional de la viña. En esta sección se identifican las metodologías candidatas y se contrasta la idoneidad de cada una frente a las particularidades del problema de envasado y postergación del etiquetado (\textit{labelling postponement}).
+
+\subsection{Identificación y Caracterización de Metodologías Candidatas}
+
+A partir de la revisión bibliográfica de literatura especializada en planificación de la producción e inventarios bajo incertidumbre, se identifican cuatro enfoques principales:
+\begin{enumerate}
+    \item \textbf{Optimización Estocástica en Dos Etapas (\textit{Two-Stage Stochastic Programming}):} divide las decisiones en una etapa \textit{here-and-now}, donde se determinan los lotes de embotellado antes de conocer la demanda, y una etapa \textit{wait-and-see}, donde, una vez observado el escenario, se decide el etiquetado y la asignación final. Esta estructura permite incorporar probabilísticamente los costos de inventario en proceso y pedidos atrasados
+\cite{boussouf2026two,cunha2017stochastic,gupta2000two}.
+
+    \item \textbf{Programación Lineal Entera Mixta Determinista (\textit{MILP / Expected Value Problem}):} Lo que realiza este método es colapsar la aleatoriedad sustituyendo la demanda incierta por el valor esperado o promedio puntual. Es el estándar para detallar \textit{set-ups} mayores (cambio de botella) y menores (cambio de etiqueta) bajo restricciones duras de capacidad y consideraciones hidráulicas de línea \cite{gunther2014block, lillo2025optimal, mac2022scheduling}.
+
+    \item \textbf{Programación Robusta y Robusta Ajustable (\textit{Robust Optimization / ARO}):} Este es el método más conservador, ya que optimiza contra el peor escenario posible (\textit{worst-case scenario}) dentro de conjuntos de incertidumbre poliédricos. Además, no requiere de una función de probabilidad basada en datos históricos \cite{hu2020hybrid, lappas2016multi}.
+
+    \item \textbf{Simulación Monte Carlo y de Eventos Discretos (\textit{Discrete Event Simulation - DES}):} Este último método se encarga de simular trayectorias estocásticas mediante muestreo aleatorio para evaluar dinámicamente el comportamiento de políticas de inventario (prefijadas) y el impacto de cuellos de botella o de procesos con dinámicas no lineales \cite{jeon2016survey, review2024simula}.
+\end{enumerate}
+
+\subsection{Contraste y Justificación Metodológica Frente a los Hallazgos Exploratorios}
+
+El contraste entre estas metodologías se puede resumir en tres conclusiones a partir del análisis de datos:
+
+\noindent\textbf{Respuesta a la Consistencia Probabilística del Árbol de Escenarios: }Dado que el árbol de 3 períodos y 11 nodos posee probabilidades condicionales consistentes, la Optimización Estocástica en Dos Etapas permite aprovechar directamente esa información \cite{gupta2000two}. En cambio, ocupar ``Programación Robusta'' ignoraría esas probabilidades y blindaría la producción contra el peor escenario \cite{hu2020hybrid}, generando un elevado ``Precio de la Robustez'', injustificado dado que la holgura mínima observada es de 29,5 horas sobre 84 disponibles por período indica que la capacidad no es una restricción activa que justifique ese conservadurismo robusto \cite{lappas2016multi}.
+
+\medskip
+\noindent\textbf{Respuesta a la Estructura de Correlación y Valor del \textit{Postponement}: }La correlación de demanda es fuertemente heterogénea: negativa para el Vino 1 ($r = -0{,}66$) y positiva para el Vino 2 ($r = 0{,}98$). Un modelo ``MILP Determinista'', al promediar la demanda, sería incapaz de cuantificar el beneficio de \textit{risk pooling} en el Vino 1 ni de valorar el inventario desacoplado en WIP como amortiguador de variaciones contrapuestas entre mercados \cite{gunther2014block, lillo2025optimal}. Por el contrario, la formulación estocástica captura claramente el valor de posponer la decisión de etiquetado a la segunda etapa mediante el cálculo del ``Valor de la Solución Estocástica'' (\textit{Value of the Stochastic Solution} / VSS) \cite{cunha2017stochastic}, evitando planes rígidos que subestimarían el alto costo de penalización por desabastecimiento (\$ 15.000/L por botella y período).
+
+\medskip
+\noindent\textbf{Respuesta a la Necesidad Prescriptiva de la Viña: }La Simulación de Eventos Discretos es útil para evaluar el desempeño de distintas configuraciones operacionales, pero posee un carácter principalmente descriptivo y no determina de manera prescriptiva una política óptima de lotes o \textit{set-ups} \cite{jeon2016survey, review2024simula}. 
+    Dado que el objetivo es minimizar los costos de inventario y quiebres de \textit{stock}, la programación estocástica ofrece una capacidad de optimización y apoyo a la decisión que la simulación no proporciona por sí sola.
+
+Para una revisión más detallada de las dimensiones críticas evaluadas (tratamiento de la incertidumbre, tiempos de preparación y limitaciones), la matriz comparativa completa se presenta en el Anexo~\ref{anexo:tabla_comparativa} (Tabla~\ref{tab:comparativa_metodologias}).
+
+
+\subsection{Síntesis y Elección Metodológica}
+
+En consecuencia, la Optimización Estocástica se presenta como la metodología más adecuada para representar la estructura probabilística del problema y evaluar el punto de desacople (\textit{decoupling point}) entre embotellado y etiquetado. Además, permite incorporar los \textit{set-ups}, inventarios y pedidos atrasados dentro de un marco prescriptivo orientado a minimizar el costo total esperado. Su principal desventaja es la explosión combinatoria del número de escenarios, que puede aumentar significativamente los tiempos de resolución
+\cite{gupta2000two}. Sin embargo, en la instancia base este efecto se mantiene acotado por el horizonte de tres períodos y el árbol de 11 nodos, permitiendo resolver el modelo en tiempos razonables mediante \textit{solvers} como Gurobi.
+
+
+\subsection{Escenarios experimentales de la metodología}
+
+La evaluación de las políticas mantendrá la estructura estocástica del modelo y variará sistemáticamente cuatro dimensiones: variabilidad de la demanda, capacidad de la línea, nivel de postergación y correlación entre productos. Los niveles considerados se presentan en la
+Tabla~\ref{tab:escenarios_metodologicos} del
+Anexo~\ref{anexo:tabla_comparativa}. Estas configuraciones definen distintos entornos experimentales sobre los que se resuelve el mismo problema estocástico, permitiendo analizar cómo cambia la política óptima ante distintas condiciones operacionales. La literatura sugiere que una capacidad moderadamente restringida puede aumentar el valor de la postergación, mientras que una capacidad muy holgada o extremadamente escasa puede reducirlo \cite{varas2018}. Esta relación se evaluará empíricamente y no se impondrá como supuesto del modelo. Así, el análisis busca determinar qué productos postergar, cuánto inventario mantener genérico y cuándo diferenciarlo, identificando las condiciones de capacidad, variabilidad, correlación y postergación bajo las cuales la estrategia genera valor para la viña.

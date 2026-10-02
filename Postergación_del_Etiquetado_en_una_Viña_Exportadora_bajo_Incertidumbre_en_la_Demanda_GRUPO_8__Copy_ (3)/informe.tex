@@ -1,0 +1,217 @@
+% Configuración de la clase (Español, PDF y tamaño 11pt)
+\documentclass[spanish]{pucthesis}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%   Paquetes esenciales   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Gráficos y figuras
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{xcolor}
+
+% Paquetes matemáticos
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+% Tipografía
+\usepackage{enumitem}
+
+% Diseño de tablas
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\captionsetup[table]{
+    singlelinecheck=false,
+    justification=raggedright,
+    labelsep=newline,
+    labelfont=bf,
+    textfont=it
+}
+\usepackage{pgfgantt}
+
+% Ajuste para evitar errores de espaciado en la bibliografía
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}
+
+\makeatletter
+\patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{\par}{}{}
+\patchcmd{\chapter}{\clearpage}{\par}{}{}
+\makeatother
+
+\renewcommand{\cleardoublepage}{\par}
+\renewcommand{\clearpage}{\par}
+
+% Citas, referencias (Formato APA tradicional con apacite) y enlaces en el PDF
+\usepackage[hidelinks,pdfusetitle,pdfdisplaydoctitle]{hyperref}
+\usepackage[notocbib]{apacite} 
+\usepackage{doi}
+\renewcommand{\doitext}{}
+
+%--------------------------------------%
+% Entornos matemáticos y de definición %
+%--------------------------------------% 
+\newtheorem{definition}{\bf Definición}[chapter]
+\newtheorem{property}{Propiedad}[chapter]
+\newtheorem{lemma}{\bf Lema}[chapter]
+\newtheorem{proposition}{Proposición}[chapter]
+\newtheorem{theorem}{\noindent \bf Teorema}[chapter]
+\newtheorem{corollary}{\bf Corolario}[chapter]
+\newtheorem{pf}{Demostración}[chapter]
+\newtheorem{example}{\bf Ejemplo}[chapter]
+\newtheorem{remark}{Observación}[chapter]
+
+% Ajuste de espacio para evitar que la portada se pase a otra página
+\makeatletter
+  \setlength{\beftitle}{60\p@\@plus24\p@} % Se reduce el espacio antes del título
+  \setlength{\afttitle}{40\p@}            % Se reduce el espacio después del título
+\makeatother
+
+\raggedbottom
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%   Documento   %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title[Postergación del Etiquetado en una Viña Exportadora bajo Incertidumbre en la Demanda \\ GRUPO 8]{\bf Postergación del Etiquetado en una Viña Exportadora bajo Incertidumbre en la Demanda \\ GRUPO 8}
+
+\author[Integrantes:]{Integrantes:\\
+\textnormal{\small{
+Javiera Isidora Andrade Rodríguez\\
+Pía Francisca Ayala Nanjari\\
+Rafael Alfonso Calderón Avendaño\\
+Valentina Andrea Gallegos Bravo\\
+Francisco Ignacio Indo Maza\\
+Aline Kneuer van Baal}
+}
+}
+
+\address{Escuela de Ingeniería\\
+         Pontificia Universidad Católica de Chile\\
+         Vicuña Mackenna 4860\\
+         Santiago, Chile}
+
+\advisor{\textbf{Profesor Guía:} Sergio Maturana}
+\ogrsmember{\textbf{Ayudante Tutor:} Ignacio Peña}
+\date{Septiembre 2026}
+\copyrightname{Grupo 8}
+\copyrightyear{2026}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Portada y preliminares  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NoChapterPageNumber
+\pagenumbering{roman}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%    Índices    %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pdfbookmark{\contentsname}{toc}
+\newpage
+\tableofcontents
+\phantomsection \label{lista_figuras}
+\listoffigures
+\phantomsection \label{lista_tablas}
+\listoftables
+\cleardoublepage
+
+%------------------------------------%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%    Resumen    %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\phantomsection \label{resumen}
+\chapter*{RESUMEN}
+\input{./Secciones/0_resumen.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Cuerpo del Informe  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagenumbering{arabic}
+
+\newpage
+
+\chapter{Introducción}
+\input{./Secciones/1_introduccion.tex} \\
+
+\vspace{0.5cm}
+
+\chapter{Descripción detallada del problema} \label{sec2}
+\input{./Secciones/2_descripcion_problema.tex} \\
+
+\vspace{0.5cm}
+
+\chapter{Discusión metodológica} \label{sec3}
+\input{./Secciones/3_descripcion_metodologica.tex} \\
+
+\vspace{0.5cm}
+
+\chapter{Pasos futuros} \label{sec4}
+\input{./Secciones/4_pasos_futuros.tex} \\
+
+\vspace{0.5cm}
+
+\chapter{Conclusiones} \label{sec5}
+\input{./Secciones/5_conclusiones.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%        BIBLIOGRAFÍA     %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cleardoublepage
+\phantomsection \label{references}
+\bibliographystyle{apacite}
+\renewcommand{\bibname}{BIBLIOGRAFÍA}
+
+
+\bibliography{referencias} % Asegúrate de que apunte a tu archivo referencias.bib
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%
+%%%    Anexos    %%%
+%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+% Anexo A (Uso de IA)
+\chapter{Uso de Inteligencia Artificial}
+\input{./Secciones/uso_ia.tex}
+
+\newpage
+
+% Anexo B: Gráficos y datos
+\chapter{Figuras}
+\label{anexo:graficos}
+\input{./Secciones/anexo_graficos.tex}
+
+\newpage
+
+% Anexo C (Tabla Comparativa)
+\chapter{Tablas}
+\label{anexo:tabla_comparativa}
+\input{./Secciones/anexo_tabla.tex}
+
+\newpage
+
+% Anexo D (Restricciones)
+\chapter{Restricciones del modelo}
+\label{anexo:restricciones}
+\input{./Secciones/anexo_ecuaciones.tex}
+
+% Agregar más anexos de ser necesario
+%\chapter*{Anexo N°2: Datos adicionales}
+%\addcontentsline{toc}{chapter}{Anexo N°2: Datos adicionales}
+%\input{./Secciones/anexo2.tex}
+
+\end{document}

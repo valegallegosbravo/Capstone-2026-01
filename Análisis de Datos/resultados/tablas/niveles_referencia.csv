@@ -1,0 +1,5 @@
+dimension,niveles_referencia,comentario
+Variabilidad de la demanda,"10%, 30%, 50%","Desviación estándar como fracción de la media, por producto"
+Capacidad de la línea por período,"21, 42, 63, 84 horas",Desde muy ajustada hasta holgada
+Etiquetas cuya postergación se permite,"0, 2, 3, 4, 5",0 = sin postergación; 5 = postergación total
+Correlación entre demandas,positiva / negativa,Explorar ambos entornos de correlación entre productos

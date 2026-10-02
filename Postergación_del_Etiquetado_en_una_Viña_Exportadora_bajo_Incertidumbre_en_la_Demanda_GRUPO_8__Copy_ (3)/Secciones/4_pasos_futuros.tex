@@ -1,0 +1,74 @@
+En esta primera etapa se caracterizó el sistema productivo y su contexto comercial, se analizaron los datos disponibles y se identificaron metodologías pertinentes para abordar la incertidumbre del problema. A partir de ello, se planteó una formulación preliminar, definiendo las principales decisiones, variables, componentes de la función objetivo y restricciones. Como siguiente etapa, esta formulación deberá revisarse y formalizarse, asegurando su coherencia con la operación productiva y la secuencia temporal de las decisiones. Posteriormente, el problema se modelará mediante optimización estocástica multietapa, permitiendo adaptar decisiones de producción, inventario y etiquetado a medida que se revele nueva información sobre la demanda.
+
+Una vez consolidado el modelo, se implementará computacionalmente en Python y Gurobi, incorporando el árbol de escenarios y los parámetros de la instancia. Previo al análisis experimental, la implementación será validada mediante instancias pequeñas y casos controlados, ya que los modelos deben ser probados independientemente de quien los desarrolle \cite[p.~29]{perez2019modelos}. Finalmente, se resolverá la instancia base y se analizarán las decisiones óptimas de embotellado, etiquetado, inventario, pedidos, capacidad y \textit{set-ups}. Luego se desarrollará el análisis experimental, modificando sistemáticamente la variabilidad de la demanda, capacidad disponible, nivel de postergación y correlación, con el fin de evaluar su efecto sobre el desempeño de las políticas productivas.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    hgrid,
+    vgrid={*{6}{draw=none},dotted},
+    x unit=1.7mm,
+    y unit title=7mm,
+    y unit chart=4.8mm,
+    title height=1,
+    bar height=0.6,
+    title/.append style={fill=gray!20, draw=gray!55},
+    title label font=\footnotesize,
+    bar/.append style={fill=blue!45, draw=blue!60!black},
+    bar incomplete/.append style={fill=blue!12, draw=blue!45},
+    bar label font=\footnotesize,
+    group/.append style={fill=black!70, draw=black!70},
+    group label font=\footnotesize\bfseries,
+    milestone/.append style={fill=orange!85!black, draw=orange!45!black},
+    milestone label font=\footnotesize\bfseries,
+    progress label text={}
+]{1}{112}
+
+  \gantttitle{Agosto}{15}
+  \gantttitle{Septiembre}{30}
+  \gantttitle{Octubre}{31}
+  \gantttitle{Noviembre}{30}
+  \gantttitle{Dic.}{6} \\
+  \gantttitlelist{1,...,16}{7} \\
+
+  \ganttgroup{CICLO 1}{1}{26} \\
+  \ganttbar[progress=100]{Análisis de datos y propuestas de uso \textit{(Valentina)}}{7}{8} \\
+  \ganttbar[progress=100]{Resumen, introducción y motivación \textit{(Aline)}}{4}{14} \\
+  \ganttbar[progress=100]{Descripción, contexto e implicancias \textit{(Aline)}}{4}{14} \\
+  \ganttbar[progress=100]{Metodologías de IO, ventajas y desventajas \textit{(Francisco)}}{9}{12} \\
+  \ganttbar[progress=100]{Decisiones, objetivos y restricciones \textit{(Pía)}}{9}{11} \\
+  \ganttbar[progress=100]{Idea(s) de modelo(s) a utilizar \textit{(Rafael, Javiera)}}{11}{13} \\
+  \ganttbar[progress=100]{Integrar y redactar Informe 1 \textit{(Todos)}}{14}{19} \\
+  \ganttbar[progress=100]{Preparación de la presentación \textit{(Aline, Javiera, Rafael, Pía)}}{14}{22} \\
+  \ganttbar[progress=100]{Ensayo y revisión cruzada \textit{(Todos)}}{22}{22} \\
+  \ganttmilestone{Presentación 1, Sala B18}{23} \\
+  \ganttbar[progress=100]{Ajustes finales al informe \textit{(Todos)}}{23}{25} \\
+  \ganttmilestone{Entrega Informe 1}{26} \\
+
+  \ganttgroup{CICLO 2}{27}{61} \\
+  \ganttbar[progress=0]{Formalización y revisión del modelo}{27}{37} \\
+  \ganttbar[progress=0]{Implementación computacional en Python y Gurobi}{33}{47} \\
+  \ganttmilestone{Evaluación individual 1}{44} \\
+  \ganttbar[progress=0]{Validación con instancias pequeñas y casos controlados}{44}{50} \\
+  \ganttbar[progress=0]{Resolución y análisis de la instancia base}{48}{55} \\
+  \ganttbar[progress=0]{Preparación de la presentación 2}{45}{51} \\
+  \ganttmilestone{Presentación Informe 2}{52} \\
+  \ganttbar[progress=0]{Integrar y redactar Informe 2}{51}{60} \\
+  \ganttmilestone{Entrega Informe 2}{61} \\
+
+  \ganttgroup{CICLO 3}{62}{110} \\
+  \ganttbar[progress=0]{Diseño y ejecución del análisis experimental}{62}{88} \\
+  \ganttbar[progress=0]{Análisis de resultados y elaboración de recomendaciones}{79}{96} \\
+  \ganttbar[progress=0]{Integrar y redactar Informe Final}{86}{102} \\
+  \ganttbar[progress=0]{Preparación de la presentación final}{92}{101} \\
+  \ganttmilestone{Presentación Informe Final}{102} \\
+  \ganttmilestone{Entrega Informe Final}{103} \\
+  \ganttmilestone{Evaluación individual 2}{110}
+\end{ganttchart}}
+\caption[Carta Gantt del proyecto]{Carta Gantt del proyecto. La escala inferior
+indica el número de semana contado desde el lunes 17 de agosto de 2026. Las
+barras llenas corresponden a tareas completadas y los rombos a los hitos del
+calendario del curso.}
+\label{fig:gantt}
+\end{figure}

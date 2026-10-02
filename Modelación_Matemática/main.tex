@@ -1,0 +1,304 @@
+\documentclass[11pt, letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+
+\title{Modelación Matemática}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Conjunto e Índices
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{1. Conjuntos e Índices}
+\begin{itemize}
+    \item $\bm{i \in I}$: Conjunto de tipos de vino, $I = \{1, 2\}$.
+    
+    \item $\bm{j \in J}$: Conjunto de etiquetas, $J = \{1, 2, 3\}$.
+    
+    \item $\bm{n \in N}$: Conjunto de nodos del árbol de escenarios,
+    $N = \{1, \ldots, 11\}$.
+    
+    \item $\bm{N_s \subset N}$: Conjunto de nodos de la etapa $s \in \{1, 2, 3\}$, con:
+    \begin{align*}
+        N_1 &= \{1\}, \\
+        N_2 &= \{2, 3, 4\}, \\
+        N_3 &= \{5, 6, 7, 8, 9, 10, 11\}.
+    \end{align*}
+    
+    \item $\bm{N^+}$: Conjunto aumentado de nodos, $N^+ = N \cup \{n_{\mathrm{aux}}\}$.
+    \begin{itemize}
+        \item $n_{\mathrm{aux}}$ es el nodo auxiliar antecesor a la raíz ($a(1) = n_{\mathrm{aux}}$), se ocupa para fijar las condiciones iniciales del sistema.
+    \end{itemize}
+    
+    \item $\bm{a(n)}$: antecesor inmediato del nodo $n\in N$,
+    con $a(1)=n_{\mathrm{aux}}$.
+\end{itemize}
+
+\textcolor{blue}{Nota: $n_{\mathrm{aux}}$ se obtuvo directamente del \textit{paper} de Mauricio Varas}
+
+%%%%%%%%%%%%%%%%%%%%%
+% Superíndices
+%%%%%%%%%%%%%%%%%%%%%
+
+\section*{2. Superíndices}
+Los superíndices indican la operación, el objeto físico o el componente de costo al que se refiere una expresión:
+
+\begin{itemize}
+    \item $\bm{b}$, $\bm{bl}$ y $\bm{l}$: Embotellado sin etiquetar (inventario WIP), embotellado y etiquetado acoplados (línea continua), y etiquetado de botellas
+    previamente embotelladas, respectivamente.
+    \begin{itemize}
+        \item Tiempos unitarios de procesamiento se denotan con la letra $\bm{w}$: $\bm{wb}$, $\bm{wbl}$, $\bm{wl}$.
+
+        \item Tiempos respectivos de \textit{set-ups} se denotan con la letra $\bm{z}$: $\bm{zb}$, $\bm{zbl}$, $\bm{zl}$.
+    \end{itemize}
+
+    \item $\bm{\mathrm{tank}}$ y $\bm{\mathrm{bottle}}$: Relativo a estanques intermedios y botellas, respectivamente.
+
+    \item $\bm{\mathrm{setup}}$, $\bm{\mathrm{WIP}}$,
+    $\bm{\mathrm{FG}}$ y $\bm{\mathrm{BO}}$: Componentes de costo por \textit{set-ups}, inventario sin etiquetar, producto terminado y pedidos atrasados (\textit{backorders}), respectivamente.
+\end{itemize}
+
+\textcolor{blue}{Nota: superindices $b$, $bl$, $l$ se obtuvieron directamente del paper de Mauricio Varas}
+
+%%%%%%%%%%%%%%%%%%
+% Parámetros
+%%%%%%%%%%%%%%%%%%
+
+\section*{3. Parámetros}
+\begin{itemize}
+    \item $\bm{D_{ijn}}$: Demanda del vino $i$ con etiqueta $j$
+    en el nodo $n$ (botellas).
+    
+    \item $\bm{p_n}$: Probabilidad incondicional de alcanzar el nodo $n$.
+    
+    \item $\bm{A_{ij}}$: Parámetro binario que vale 1 si la etiqueta $j$ puede usarse con el vino $i$, y 0 en caso contrario.
+
+    \item $\bm{V^{\mathrm{bottle}}}$: Volumen de una botella
+    ($0{,}75$ litros/botella).
+    
+    \item $\bm{V^{\mathrm{tank}}}$: Capacidad de un estanque
+    ($10.000$ litros/estanque).
+    
+    \item $\bm{K^{\mathrm{tank}}}$: Número máximo de estanques
+    disponibles por nodo (20 estanques).
+    
+    \item $\bm{U}$: Subutilización máxima admisible de un estanque,
+    expresada como fracción de su capacidad.
+    
+    \item $\bm{C}$: Tiempo disponible de la línea por nodo (horas),
+    con $C\in\{21,42,63,84\}$, según la configuración experimental.
+
+    \item $\bm{T^{wb}}$, $\bm{T^{wbl}}$ y $\bm{T^{wl}}$:
+    Tiempos unitarios de embotellado, producción acoplada y
+    etiquetado desacoplado, respectivamente (horas/botella).
+
+    \item $\bm{T^{zb}}$, $\bm{T^{zbl}}$ y $\bm{T^{zl}}$: Tiempos de \textit{set-up} de esas operaciones, respectivamente (horas).
+
+    \item $\bm{C^{zb}}$, $\bm{C^{zbl}}$ y $\bm{C^{zl}}$: Costos de \textit{set-up} de esas operaciones, respectivamente (\$/\textit{set-up})
+    
+    \item $\bm{C^{sb}}$, $\bm{C^{sbl}}$ y $\bm{C^{bbl}}$: Costo de mantener una botella sin etiquetar, terminada y un pedido atrasado, respectivamente
+    (\$/botella por período).
+
+    \item $\bm{W^{b,0}_i}$: Embotellado sin etiquetar predefinido
+    antes del nodo raíz (botellas).
+    
+    \item $\bm{W^{bl,0}_{ij}}$: Producción acoplada predefinida
+    antes del nodo raíz (botellas).
+    
+    \item $\bm{S^{b,0}_i}$: Inventario inicial de botellas sin etiquetar del vino $i$ (botellas).
+    
+    \item $\bm{S^{bl,0}_{ij}}$: Inventario inicial de producto
+    terminado $(i,j)$ (botellas).
+    
+    \item $\bm{B^{bl,0}_{ij}}$: Pedidos atrasados iniciales del producto $(i,j)$ (botellas).
+
+    \item $\bm{M^b(C)}$, $\bm{M^{bl}(C)}$ y $\bm{M^l(C)}$: Cotas superiores válidas para $w^b_{in}$, $w^{bl}_{ijn}$ y $w^l_{ijn}$,
+    respectivamente (botellas).
+    
+    \item $\bm{PL}$: Número máximo de productos $(i,j)$ habilitados para postergación de etiquetado.
+\end{itemize}
+
+\textcolor{blue}{Nota: Gran parte de los parámetros se saco directamente del \textit{paper} de Mauricio Varas}
+
+%%%%%%%%%%%%%
+% Variables
+%%%%%%%%%%%%%
+
+\section*{4. Variables de Decisión}
+\begin{itemize}
+    \item $\bm{w^b_{in}}$: Botellas del vino $i$ embotelladas sin etiqueta en el nodo $n$.
+    
+    \item $\bm{w^{bl}_{ijn}}$: Botellas del producto $(i,j)$ embotelladas y etiquetadas de forma acoplada en el nodo $n$.
+    
+    \item $\bm{w^l_{ijn}}$: Botellas del vino $i$ etiquetadas con $j$ desde inventario intermedio en el nodo $n$.
+
+    \item $\bm{z^b_{in}}$, $\bm{z^{bl}_{ijn}}$ y
+    $\bm{z^l_{ijn}}$: Variables binarias de valor 1 si se activa el \textit{set-up} de cada operación (embotellado, producción acoplada, etiquetado desacoplado), 0 en otro caso.
+    
+    \item $\bm{z^{\mathrm{pos}}_{ij}}$: Variable binaria de valor 1 si se permite postergar el etiquetado del producto $(i,j)$, 0 en otro caso.
+
+    \item $\bm{s^b_{in}}$: Inventario de
+    botellas del vino $i$ sin etiquetar al final del nodo $n$.
+    
+    \item $\bm{s^{bl}_{ijn}}$: Inventario
+    de producto terminado $(i,j)$ al final del nodo $n$.
+    
+    \item $\bm{b^{bl}_{ijn}}$: Pedidos
+    atrasados del producto $(i,j)$ al final del nodo $n$.
+
+    \item $\bm{y_{in}}$: Número (entero) de estanques preparados con vino $i$ en el nodo $n$.
+    
+    \item $\bm{u_{in}}$: Fracción de subutilización de estanque asociada al vino $i$ en el nodo $n$.
+\end{itemize}
+
+\textcolor{blue}{Nota: Gran parte las variables se saco directamente del \textit{paper} de Mauricio Varas}
+
+%%%%%%%%%%%%%%%%%%%%
+% Función Objetivo
+%%%%%%%%%%%%%%%%%%%%
+
+\section*{5. Función Objetivo}
+El modelo busca minimizar el costo total esperado del sistema a lo largo del árbol de escenarios. Para ello, considera los costos de preparación, inventario y pedidos atrasados, permitiendo evaluar si los beneficios de postergar el etiquetado compensan los costos adicionales que esta decisión puede generar.
+
+\begin{equation}
+\min \sum_{n\in N} p_n
+\left(C^{\mathrm{setup}}_n+C^{\mathrm{WIP}}_n+C^{\mathrm{FG}}_n+C^{\mathrm{BO}}_n\right)
+\label{eq:objetivo-compacto}
+\end{equation}
+
+Donde las componentes de costo por nodo son:
+\begin{align}
+    C^{\mathrm{setup}}_n &= C^{zb}\sum_{i\in I}z^b_{in} + C^{zbl}\sum_{i\in I}\sum_{j\in J}A_{ij}z^{bl}_{ijn} + C^{zl}\sum_{i\in I}\sum_{j\in J}A_{ij}z^l_{ijn} \label{eq:costo-setup} \\
+    C^{\mathrm{WIP}}_n &= C^{sb}\sum_{i \in I} s_{in}^b \label{eq:costo-wip} \\
+    C^{\mathrm{FG}}_n &= C^{sbl}\sum_{i \in I}\sum_{j \in J} A_{ij} s_{ijn}^{bl} \label{eq:costo-fg} \\
+    C^{\mathrm{BO}}_n &= C^{bbl}\sum_{i \in I}\sum_{j \in J} A_{ij} b_{ijn}^{bl} \label{eq:costo-bo}
+\end{align}
+
+%%%%%%%%%%%%%%%%%%%%
+% Restricciones
+%%%%%%%%%%%%%%%%%%%%
+
+\section*{6. Restricciones}
+
+\subsection*{6.1. Balance de Inventarios y Flujos}
+
+\paragraph{Balance de Inventario Intermedio (WIP):}
+Se garantiza que las botellas llenas sin etiquetar disponibles en el nodo $n$ sean las provenientes del inventario del nodo anterior $a(n)$ (inventario restante y embotellado disponible), descontando lo consumido por lo etiquetado en $n$:
+
+\begin{equation}
+s^b_{in} = s^b_{i,a(n)} + w^b_{i,a(n)} - \sum_{j \in J} A_{ij}\, w^l_{ijn} \qquad \forall\, i \in I,\; n \in N
+\label{eq:balance-wip}
+\end{equation}
+
+\paragraph{Balance de Producto Terminado y Pedidos Atrasados (\textit{Backlog}):}
+Relaciona el inventario terminado ($s_{ijn}^{bl}$) y los pedidos pendientes ($b_{ijn}^{bl}$) con la producción acoplada disponible desde $a(n)$, el etiquetado posterior ejecutado en el nodo $n$ y la demanda realizada $D_{ijn}$:
+
+\begin{equation}
+s^{bl}_{ijn} - b^{bl}_{ijn} = s^{bl}_{ij,a(n)} - b^{bl}_{ij,a(n)} + w^{bl}_{ij,a(n)} + w^l_{ijn} - D_{ijn} \qquad \forall\, i \in I,\ j \in J,\ n \in N \; : \; A_{ij}=1
+\label{eq:balance-fg}
+\end{equation}
+
+\paragraph{Disponibilidad de Inventario Intermedio:}
+Asegura que no se etiquete desde inventario intermedio una cantidad superior a la disponible:
+\begin{equation}
+\sum_{j \in J} A_{ij}\, w^l_{ijn} \;\leq\; s^b_{i,a(n)} + w^b_{i,a(n)} \qquad \forall\, i \in I,\ n \in N
+\label{eq:disponibilidad-wip}
+\end{equation}
+
+\subsection*{6.2. Política de Postergación}
+El etiquetado postergado se autoriza solamente para productos compatibles y habilitados estratégicamente. Se limita el número total de productos con flexibilidad con la cota $PL$:
+
+\begin{align}
+    z^l_{ijn} &\leq A_{ij} z^{\mathrm{pos}}_{ij} && \forall i \in I,\; j \in J,\; n \in N \label{eq:pos-activacion} \\
+    \sum_{i \in I}\sum_{j \in J} A_{ij}z^{\mathrm{pos}}_{ij} &\leq PL \label{eq:pos-limite}
+\end{align}
+
+\subsection*{6.3. Activación de \textit{Set-ups}}
+Activa costos y tiempos de \textit{set-ups} cuando se inicia un proceso para un tipo de vino:
+
+\begin{align}
+    w^b_{in} &\leq M^b(C) \, z^b_{in} && \forall i \in I,\; n \in N \label{eq:setup-b} \\
+    w^{bl}_{ijn} &\leq A_{ij} M^{bl}(C)  \, z^{bl}_{ijn} && \forall i \in I,\; j \in J,\; n \in N \label{eq:setup-bl} \\
+    w^l_{ijn} &\leq A_{ij} M^l(C) \, z^l_{ijn} && \forall i \in I,\; j \in J,\; n \in N \label{eq:setup-l}
+\end{align}
+
+\noindent donde las cotas superiores ajustadas por capacidad corresponden a:
+\begin{align}
+    M^b(C) &= \max \left\{ \dfrac{C - T^{zb}}{T^{wb}},\, 0 \right\} \label{eq:mb} \\
+    M^{bl}(C) &= \max \left\{ \dfrac{C - T^{zbl}}{T^{wbl}},\, 0 \right\} \label{eq:mbl} \\
+    M^l(C) &= \max \left\{ \dfrac{C - T^{zl}}{T^{wl}},\, 0 \right\} \label{eq:ml}
+\end{align}
+
+\newpage
+
+\subsection*{6.4. Disponibilidad y Balance de Estanques}
+
+La restricción \eqref{eq:tanques-cota} limita el número máximo de estanques. Sobre la restricción \eqref{eq:tanques-subutil}, esta limita cuánto puede desperdeciarse de un estanque, teniendo en cuenta el máximo admisible $U$. Por último, la restricción \eqref{eq:tanques-balance} iguala el volumen de vino efectivamente almacenado con el volumen que exige la producción de ese nodo específico.
+
+\begin{align}
+    \sum_{i \in I} y_{in} &\leq K^{\mathrm{tank}} && \forall n \in N \label{eq:tanques-cota} \\
+    u_{in} &\leq U && \forall i \in I,\; n \in N \label{eq:tanques-subutil} \\
+    V^{\mathrm{tank}} (y_{in} - u_{in}) &= V^{\mathrm{bottle}} \left( w^b_{in} + \sum_{j \in J} A_{ij} w^{bl}_{ijn} \right) && \forall i \in I,\; n \in N \label{eq:tanques-balance}
+\end{align}
+
+\subsection*{6.5. Capacidad de la Línea de Envasado}
+
+La utilización de la línea de envasado por procesos de embotellamiento/etiquetado y tiempos de \textit{set-ups} no puede ser mayor a las horas disponibles $C$:
+
+\begin{equation}
+\begin{aligned}
+    T^{wb}\sum_{i \in I} w^b_{in} 
+    &+ T^{wbl}\sum_{i \in I} \sum_{j \in J} A_{ij} w^{bl}_{ijn} 
+    + T^{wl}\sum_{i \in I} \sum_{j \in J} A_{ij} w^l_{ijn} \\
+    &+ T^{zb}\sum_{i \in I} z^b_{in} 
+    + T^{zbl}\sum_{i \in I} \sum_{j \in J} A_{ij} z^{bl}_{ijn} 
+    + T^{zl}\sum_{i \in I} \sum_{j \in J} A_{ij} z^l_{ijn} 
+    \le C \quad \forall n \in N
+\end{aligned}
+\label{eq:capacidad-linea}
+\end{equation}
+
+\subsubsection*{6.6. Condiciones Iniciales en el Nodo Auxiliar ($n_{\mathrm{aux}}$)}
+Para fijar el estado del sistema antes del inicio del horizonte de planificación, i.e., $a(1) = n_{\mathrm{aux}}$:
+
+\begin{align*}
+    s^b_{i, n_{\mathrm{aux}}} &= S^{b,0}_i && \forall i \in I \\    
+    s^{bl}_{ij, n_{\mathrm{aux}}} &= S^{bl,0}_{ij} && \forall i \in I,\; j \in J : A_{ij} = 1 \\
+    b^{bl}_{ij, n_{\mathrm{aux}}} &= B^{bl,0}_{ij} && \forall i \in I,\; j \in J : A_{ij} = 1 \\
+    w^b_{i, n_{\mathrm{aux}}} &= W^{b,0}_i && \forall i \in I \\
+    w^{bl}_{ij, n_{\mathrm{aux}}} &= W^{bl,0}_{ij} && \forall i \in I,\; j \in J : A_{ij} = 1
+\end{align*}
+
+\textit{Nota:} En la configuración base del proyecto, todos los parámetros iniciales son cero.
+
+\subsubsection*{6.7. Naturaleza de las Variables}
+
+\begin{align*}
+    w^b_{in}, \, u_{in} &\geq 0 && \forall i \in I,\; n \in N \\
+    w^{bl}_{ijn}, \, w^l_{ijn} &\geq 0 && \forall i \in I,\; j \in J,\; n \in N : A_{ij} = 1 \\
+    s^b_{in} &\geq 0 && \forall i \in I,\; n \in N^+ \\
+    s^{bl}_{ijn}, \, b^{bl}_{ijn} &\geq 0 && \forall i \in I,\; j \in J,\; n \in N^+ : A_{ij} = 1 \\
+    y_{in} &\in \mathbb{Z}^+_{0} && \forall i \in I,\; n \in N \\
+    z^b_{in} &\in \{0, 1\} && \forall i \in I,\; n \in N \\
+    z^{bl}_{ijn}, \, z^l_{ijn} &\in \{0, 1\} && \forall i \in I,\; j \in J,\; n \in N : A_{ij} = 1 \\
+    z^{\mathrm{pos}}_{ij} &\in \{0, 1\} && \forall i \in I,\; j \in J : A_{ij} = 1
+\end{align*}
+
+\section*{7. Supuestos}
+
+Los pedidos atrasados (\textit{backorders}) no satisfechos en el nodo $n$ se acumulan en la variable $b^{bl}_{ijn}$, transfiriéndose la deuda al nodo siguiente mediante el término $-b^{bl}_{ij,a(n)}$ en la restricción \eqref{eq:balance-fg}, incurriéndose en el costo de penalización de $\$15.000$ por botella/período hasta su entrega efectiva.
+
+\end{document}
+

@@ -1,0 +1,268 @@
+La etapa de empaque vitivinícola posee características particulares que configuran un problema de programación altamente complejo (\textit{Np-Hard}) \cite{maccawley2022, varas2018}.
+
+\section{El Proceso de Embotellado y Tipos de \textit{Set-ups}\label{sec:sec1}}
+Las bodegas de gran escala operan múltiples líneas de producción en paralelo, las cuales se abastecen desde tanques de almacenamiento intermedio \cite{varas2018}.
+Cuando ambas operaciones se realizan de manera acoplada, la
+velocidad general de la línea queda determinada por el etiquetado, que suele ser más lento que el embotellado \cite{varas2018}. Los cambios de producción generan dos tipos de \textit{set-ups}. Los \textit{set-ups} mayores ocurren al modificar la familia de botellas, por ejemplo, su tamaño, forma o color \cite{bouzdine2011}, y requieren desmontar y calibrar componentes de la línea, pudiendo detenerla durante un turno completo de ocho horas. \cite{maccawley2022}. 
+
+Los \textit{set-ups} menores corresponden a cambios de SKU, etiqueta o variedad de vino dentro de una misma familia de botellas y requieren entre 20 y 60 minutos \cite{maccawley2022}. Estos tiempos también dependen de la secuencia de producción. Por ello, una secuencia inadecuada puede destinar entre un 15\% y un 40\% del tiempo productivo a detenciones por \textit{set-ups}, haciendo que la secuenciación sea una decisión relevante para el uso de la capacidad \cite{maccawley2022}.
+
+\section{La Postergación del Etiquetado (\textit{Labelling Postponement}) como Estrategia de Cobertura\label{sec:sec3}}
+
+La postergación consiste en retener las botellas llenas de vino en un estado intermedio sin etiquetar (\textit{“blancks”}) en el almacén, retrasando el proceso de etiquetado final hasta recibir información de demanda más precisa de los importadores \cite{cholette2009, varas2018}.
+
+\subsection{Desventaja (Costo de \textit{Postponement}): \label{sec:sub1_desv}}
+Romper el flujo continuo e introducir un doble manejo de botellas aumenta los costos de preparación, ya que se incurre en un \textit{set-up} de embotellado y posteriormente en un \textit{set-up} de etiquetado independiente, en lugar de uno conjunto). Además, genera costos adicionales de almacenamiento físico para el inventario intermedio \cite{cholette2009, varas2018}.
+
+\subsection{Ventaja\label{sec:sub2_vent}}
+Proporciona una flexibilidad operativa sustancial. \cite{varas2018} demostraron que la postergación ofrece mayores beneficios económicos bajo tres condiciones específicas: $1^{ro}$, cuando la capacidad de producción es moderadamente ajustada. Si es extremadamente holgada o saturada, el beneficio marginal de la flexibilidad decrece significativamente; $2^{do}$, cuando la variabilidad de la demanda es alta en los mercados de exportación, y $3^{ro}$, cuando existe una correlación negativa en la demanda entre los diferentes SKUs, permitiendo compensar las alzas de un mercado con las bajas de otro utilizando el mismo \textit{stock} de botellas sin etiquetar.
+
+\section{Restricciones Regulatorias y de Etiquetado\label{sec:sec4}}
+
+
+El etiquetado de vinos está rígidamente normado por leyes nacionales e internacionales, lo que incrementa la fragmentación de inventario y la necesidad de postergación:
+
+\begin{itemize}
+    \item En Chile, la Ley 18.455 (Decreto N.° 78 de 1986) exige que la etiqueta indique denominación, graduación alcohólica, volumen, envasador y la mención "Envasado/Embotellado en Chile" para exportación.
+    
+    \item En la Unión Europea, el Reglamento (UE) 2021/2117 exige incorporar información nutricional e ingredientes en el etiquetado. Estas exigencias, distintas por país aunque el vino base sea el mismo, aceleran la obsolescencia de etiquetas ya impresas y refuerzan la necesidad de postergar la diferenciación \cite{bouzdine2011,varas2018}.
+
+\end{itemize}
+
+\section{Motivación, Objetivo General y Entregables del Proyecto\label{sec:sec6}}
+
+\begin{enumerate} [label = \arabic*.]
+    \item \textbf{Motivación:} Surge de la ineficiencia crónica y el riesgo financiero asociados al esquema tradicional MTS/MTO en la bodega (Cholette, 2009). La alta inexactitud de los pronósticos de importación genera el riesgo de asignación errónea de producto, lo que provoca costosas rupturas de stock y excesos de inventario obsoleto, agravado por las normativas de etiquetado nacional (Ley 18.455) e internacional (Reglamento UE 2021/2117) que fragmentan el stock e impiden su libre intercambio (Bouzdine-Chameeva \& Cholette, 2011; Varas et al., 2018).
+
+    \item \textbf{Objetivo General:} Diseñar una metodología cuantitativa de apoyo a la toma de decisiones basada en Investigación Operativa que permita evaluar los beneficios de implementar la postergación táctica del etiquetado en una viña exportadora bajo incertidumbre en la demanda, determinando de manera óptima los lotes a embotellar y etiquetar en cada período en tiempos de cómputo razonables.
+    
+    \item \textbf{Entregables:} Se entregará un modelo de optimización implementado computacionalmente, junto con un análisis de resultados que permita comparar distintas políticas de producción y cuantificar el valor económico de postergar el etiquetado bajo diferentes escenarios de demanda, capacidad y variabilidad.
+
+    \end{enumerate}
+
+\section{Análisis Exploratorio de los Datos de la Instancia Base\label{sec:s0}}
+
+Se realizó un análisis exploratorio de la instancia de datos entregada por el profesor (Anexo A), correspondiente a una viña que produce dos vinos, Vino 1 y Vino 2, sobre una única línea de envasado capaz de embotellar y etiquetar de forma acoplada o desacoplada. El Vino 1 admite tres etiquetas y el Vino 2 admite dos, lo que da origen a cinco combinaciones vino-etiqueta cuya demanda se conoce a través de un árbol de escenarios de tres períodos y once nodos, calibrado con estados de demanda alta, media y baja.
+
+
+\section{Decisiones, objetivos, restricciones e indicadores de desempeño}
+
+\label{subsec:decisiones_objetivos_restricciones}
+La planificación del envasado enfrenta un \textit{trade-off} entre diferenciar anticipadamente el producto y conservar flexibilidad frente a la incertidumbre de la demanda. Retrasar el etiquetado permite mantener inventario genérico hasta disponer de mayor información, reduciendo el riesgo de asignar producto a una
+etiqueta cuya demanda futura resulte menor a la prevista
+\citep{cholette2009,varas2018}.
+
+Esta flexibilidad, sin embargo, implica costos adicionales de inventario, \textit{set-ups} y capacidad. Por ello, la decisión consiste en determinar si el beneficio de conservar capacidad de reasignación compensa dichos costos operacionales.
+
+\subsection{Estructura de decisión bajo incertidumbre}
+
+La demanda se representa mediante un árbol de escenarios de tres períodos y once nodos, donde cada nodo resume la información disponible hasta ese momento. Las decisiones pueden adaptarse a la demanda observada, pero no utilizar información futura, respetando el principio de no anticipatividad. Además, lo embotellado en un período queda disponible una etapa después. Por ello, el embotellado constituye una decisión \textit{ex ante}, mientras que el etiquetado de inventario previamente embotellado funciona como una decisión de recurso, al poder ajustarse una vez revelada nueva información. Esta secuencia permite desplazar parte de la diferenciación hacia un momento de menor incertidumbre, constituyendo el principal mecanismo mediante el cual la postergación puede generar valor económico.
+
+\subsection{Decisiones principales}
+
+Se identifican tres decisiones operacionales principales:
+
+\begin{itemize}
+    \item \textbf{Embotellado sin etiquetar:} definir cuánto vino embotellar y mantener como inventario genérico, conservando flexibilidad entre las etiquetas compatibles.
+
+    \item \textbf{Embotellado y etiquetado acoplados:} definir cuánto producir directamente como una combinación vino--etiqueta, evitando una operación posterior pero comprometiendo anticipadamente el inventario.
+
+    \item \textbf{Etiquetado de inventario intermedio:} asignar las botellas genéricas disponibles a productos finales compatibles según la información de demanda revelada, materializando la estrategia de postergación.
+\end{itemize}
+
+Estas decisiones se complementan con la activación de \textit{set-ups}, la gestión de inventarios y el tratamiento de pedidos atrasados.
+
+\subsection{Objetivo operacional}
+
+El objetivo operacional es determinar una política de embotellado, etiquetado e inventario que minimice el costo total esperado a lo largo del árbol de escenarios. Para ello, los costos de cada nodo se ponderan por su probabilidad de ocurrencia, incorporando explícitamente las distintas realizaciones posibles de la demanda.
+Para una configuración experimental dada, la función objetivo se expresa conceptualmente como:
+
+\begin{equation}
+\min \;
+\sum_{n\in\mathcal{N}} p_n
+\left[
+    C^{setup}_n
+    +C^{WIP}_n
+    +C^{FG}_n
+    +C^{BO}_n
+\right],
+\label{eq:objetivo_esperado}
+\end{equation}
+
+donde $C^{setup}_n$ incorpora los \textit{set-ups} de embotellado,
+embotellado-etiquetado y etiquetado; $C^{WIP}_n$ corresponde al inventario de
+botellas sin etiquetar; $C^{FG}_n$ al inventario de producto terminado; y
+$C^{BO}_n$ a los pedidos atrasados. Su formulación algebraica con los
+parámetros de la instancia se presenta en el Anexo~\ref{anexo:restricciones}. La estructura de costos penaliza fuertemente los pedidos atrasados: una
+botella--período de atraso equivale al costo de almacenar 1.000 botellas terminadas o 1.500 botellas sin etiquetar durante un período. Así, aunque el modelo minimiza un único costo total esperado, la parametrización prioriza implícitamente el cumplimiento oportuno de la demanda. Sin embargo, el valor óptimo no caracteriza por sí solo el desempeño de una política, por lo que las soluciones se complementarán con los indicadores definidos en la sección siguiente.
+
+\section{Objetivos de evaluación e indicadores de desempeño}
+
+Los indicadores de desempeño permiten evaluar las políticas desde cuatro dimensiones complementarias: eficiencia económica, cumplimiento de la demanda, valor de la postergación y beneficio de la adaptación multietapa. A partir de estas dimensiones se definen los siguientes objetivos de evaluación:
+
+\begin{enumerate}[label=\textbf{KPI-\arabic*.}, leftmargin=*, itemsep=2pt]
+    \item Evaluar la eficiencia económica global de las políticas obtenidas y permitir su comparación bajo una misma configuración experimental.
+    \item Evaluar la capacidad de la política para satisfacer la demanda dentro del período en que es requerida.
+    \item Cuantificar el beneficio económico atribuible específicamente a disponer de diferenciación tardía.
+    \item Cuantificar el beneficio atribuible a adaptar las decisiones a medida que se revela nueva información, distinguiéndolo del beneficio físico de mantener producto sin diferenciar.
+    \item Determinar si ampliar el nivel de postergación genera rendimientos decrecientes e identificar qué productos concentran primero su valor.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{KPI-1. Costo total esperado: }El costo total esperado corresponde a la medida de \textbf{eficiencia económica} de la política y coincide con el criterio de optimización utilizado por el modelo. Se calcula como
+\begin{equation}
+    CTE =
+    \sum_{n\in\mathcal{N}}p_n
+    \left(
+        C^{setup}_n+
+        C^{WIP}_n+
+        C^{FG}_n+
+        C^{BO}_n
+    \right),
+\end{equation}
+
+donde $p_n$ es la probabilidad de alcanzar el nodo $n$. Se expresa en \textbf{unidades monetarias} y, entre políticas evaluadas bajo una misma configuración, un menor $CTE$ indica un mejor desempeño económico esperado.
+
+\medskip
+\noindent\textbf{KPI-2. Nivel de servicio: }El nivel de servicio representa el \textbf{desempeño en el cumplimiento temporal de la demanda}. Se define como la proporción esperada de unidades cuya demanda es satisfecha dentro del período en que son requeridas:
+\begin{equation}
+    NS =
+    \frac{
+        \mathbb{E}[\text{demanda satisfecha oportunamente}]
+    }{
+        \mathbb{E}[\text{demanda total}]
+    }
+    \times100\%.
+\end{equation}
+
+Es adimensional y se expresa como porcentaje: un valor de $100\%$ implica ausencia de pedidos atrasados, y valores inferiores, demanda desplazada a períodos posteriores.
+
+\medskip
+\noindent\textbf{KPI-3. Valor económico de la postergación: }El valor económico de la postergación mide la reducción del costo total esperado atribuible a la diferenciación tardía. Para una configuración experimental $\theta$, que fija las condiciones de capacidad, variabilidad y correlación de la demanda, y un nivel de postergación $PL>0$, se define como:
+\begin{equation}
+    V^{POST}(PL;\theta)
+    =
+    CTE^{*}(0;\theta)
+    -
+    CTE^{*}(PL;\theta).
+\end{equation}
+
+Se expresa en las mismas \textbf{unidades monetarias} del costo total esperado. Un valor positivo indica, \textit{ceteris paribus}, que permitir postergación reduce el costo esperado; uno negativo, que los costos adicionales de la estrategia superan el beneficio de la mayor flexibilidad.
+
+\medskip
+\noindent\textbf{KPI-4. Valor de la solución multietapa (VMS): }El VMS cuantifica el beneficio de la adaptación temporal de las decisiones frente a la revelación progresiva de incertidumbre, comparando el costo óptimo de una formulación con menor capacidad adaptativa con el del modelo multietapa:
+
+\begin{equation}
+    VMS =
+    Z^{*}_{2\text{-etapas}}
+    -
+    Z^{*}_{\text{multietapa}}.
+\end{equation}
+
+Un valor positivo indica que la adaptación secuencial de las decisiones reduce el costo esperado. Así, el VMS captura el valor informacional y temporal de la adaptación, diferenciándolo del valor económico de la postergación, asociado a mantener producto sin diferenciar.
+
+\medskip
+\noindent\textbf{KPI-5. Valor marginal de ampliar la flexibilidad: }Cuantifica la reducción adicional del costo óptimo esperado obtenida al aumentar el nivel de postergación entre dos configuraciones consecutivas. Para dos niveles $PL_a < PL_b$, se define como
+\begin{equation}
+    \Delta V_{a,b} = Z^*_{PL_a} - Z^*_{PL_b}.
+    \label{eq:valor_marginal}
+\end{equation}
+
+La comparación sucesiva entre niveles de $PL$ permite detectar la existencia de rendimientos decrecientes de la postergación e identificar qué productos prioriza el modelo al ampliar progresivamente la posibilidad de diferenciación tardía.
+
+
+\subsection{Restricciones principales}
+
+Las restricciones representan las condiciones físicas, temporales y operacionales
+que delimitan las políticas factibles. En esta sección se presentan
+conceptualmente, mientras que su formulación algebraica se incluye en el
+Anexo~\ref{anexo:restricciones}.
+
+\medskip
+\noindent\textbf{Conservación del inventario intermedio: } El inventario de botellas sin etiquetar en cada período corresponde al inventario remanente y al embotellado previamente disponible, descontando las unidades destinadas a etiquetado. Esta restricción asegura la conservación física del producto e impide utilizar unidades antes de que estén disponibles. La restricción se presenta en el Anexo \nameref{eq:anexoD-balance-intermedio}.
+
+\medskip
+\noindent\textbf{Conservación de producto terminado y demanda pendiente: }Para cada combinación vino--etiqueta, la demanda debe ser satisfecha mediante producto terminado disponible o mediante producto que pueda completarse en el período correspondiente. La demanda no satisfecha se conserva como pedido atrasado. Esta permite representar explícitamente el vínculo entre producción, inventario y cumplimiento de los requerimientos de demanda. Veáse Anexo \nameref{eq:anexoD-balance-terminado}.
+
+\medskip
+\noindent\textbf{Capacidad de la línea: }Las operaciones de embotellado, etiquetado, producción acoplada y sus respectivos \textit{set-ups} comparten la misma capacidad productiva. Dado que la postergación utiliza la línea tanto en el embotellado como en el etiquetado posterior, su beneficio debe compensar este uso adicional de capacidad
+\citep{maccawley2022}. 
+Véase Anexo Anexo \nameref{eq:anexoD-capacidad}.
+
+\medskip
+\noindent\textbf{Activación de \textit{set-ups}: }Toda operación productiva requiere activar su preparación correspondiente,
+incorporando su tiempo y costo fijo. Esto evita fragmentar artificialmente la
+producción sin considerar sus consecuencias operacionales. Las restricciones
+se presentan en el Anexo \nameref{eq:anexoD-setup-embotellado}.
+
+\medskip
+\noindent\textbf{Compatibilidad vino--etiqueta: }El inventario sin etiquetar solo puede reasignarse entre etiquetas compatibles
+con el mismo vino base. Así, el \textit{risk pooling} generado por la
+postergación ocurre dentro de cada familia de productos y no permite sustituir
+inventario entre vinos distintos \citep{cholette2009,varas2018}. Véase Anexo \nameref{eq:anexoD-compatibilidad}.
+
+\medskip
+\noindent\textbf{Disponibilidad de estanques:}Los 20 estanques de 10.000 litros limitan el volumen de vino preparado
+simultáneamente antes del embotellado. Estos no corresponden a almacenamiento
+de botellas sin etiquetar y, por tanto, se distinguen del inventario intermedio
+generado por la postergación. Véase Anexo \nameref{eq:anexoD-numero-estanques}.
+
+\medskip
+\noindent\textbf{Condiciones iniciales y de frontera temporal: }La formulación debe respetar los inventarios y pedidos atrasados iniciales, así
+como el horizonte finito de planificación. En particular, las decisiones del
+último período no deben generar beneficios asociados a producto disponible
+fuera del horizonte, salvo que se defina explícitamente un valor residual.
+
+ 
+\subsection{Metodología\label{sec:s1}}
+
+El análisis se implementó en Python, de forma reproducible y fácil de actualizar ante cambios en los datos base, y comprende cuatro etapas: (i) validar la consistencia probabilística del árbol de escenarios, (ii) calcular estadística descriptiva y demanda esperada por producto, (iii) estimar la correlación de demanda entre las cinco combinaciones vino--etiqueta, y (iv) evaluar, nodo a nodo, las horas de línea requeridas frente a la capacidad disponible bajo el supuesto extremo de que todo el volumen se embotella y etiqueta de forma acoplada, es decir, sin aprovechar la postergación. Este último supuesto se adoptó como cota superior del uso de capacidad, ya que interesa comprobar si esta puede llegar a ser una restricción activa incluso en el escenario que menos se beneficia de desacoplar el etiquetado.
+
+\subsection{Consistencia del Árbol de Escenarios\label{sec:s2}}
+
+La validación confirmó la consistencia probabilística del árbol: las
+probabilidades condicionales de los nodos hijos suman uno y las probabilidades de los escenarios terminales también totalizan uno. La estructura completa se presenta en la Figura~\ref{fig:anexo_arbol} del
+Anexo~\ref{anexo:graficos}. Por ello, los datos pueden utilizarse directamente como parámetros del modelo estocástico, sin ajustes adicionales.
+
+
+
+
+\subsection{Caracterización de la Demanda por Producto\label{sec:s3}}
+
+La demanda esperada, ponderada por la probabilidad de cada nodo terminal,
+resultó heterogénea entre los cinco productos, como se presenta en la
+Figura~\ref{fig:anexo_demanda_esperada} del
+Anexo~\ref{anexo:graficos}. La combinación $(1,1)$ concentra la mayor demanda
+esperada (40.665 botellas), pero también la mayor variabilidad relativa
+(coeficiente de variación de $0{,}59$, con un máximo de 81.856 botellas frente
+a un mínimo de 10.426 según el nodo), mientras que las combinaciones del
+Vino 2, $(2,1)$ y $(2,2)$, presentan una demanda esperada más moderada
+(26.732 y 25.165 botellas, respectivamente) y sensiblemente más estable
+(coeficiente de variación cercano a $0{,}33$). La combinación $(1,3)$ es la
+de menor demanda esperada (16.901 botellas). Esta heterogeneidad sugiere que
+el valor de postergar el etiquetado no debiese ser uniforme entre vinos, sino
+que dependerá de cuán variable es la demanda de cada combinación
+vino--etiqueta.
+
+
+
+\subsection{Estructura de Correlación y Valor de la Postergación\label{sec:s4}}
+
+Un resultado especialmente relevante para el problema en estudio es la
+estructura de correlación de la demanda entre productos, cuya matriz completa
+se presenta en la Figura~\ref{fig:fig3} del Anexo~\ref{anexo:graficos}.
+Las etiquetas del Vino 1 presentan correlaciones negativas en dos de sus
+combinaciones (por ejemplo, $-0{,}66$ entre las combinaciones $(1,1)$ y
+$(1,2)$), mientras que las dos etiquetas del Vino 2 se correlacionan de forma
+casi perfecta y positiva ($0{,}98$ entre $(2,1)$ y $(2,2)$).
+
+Este hallazgo respalda la lógica de la postergación como punto de desacople: cuando las demandas de etiquetas asociadas a un mismo vino se mueven en direcciones opuestas, el inventario sin etiquetar puede reasignarse hacia el producto con mayor demanda, reduciendo la necesidad de mantener inventarios diferenciados por adelantado \cite{cholette2018}. Por ello, el efecto de \textit{risk pooling} resulta más prometedor para el Vino 1, donde predominan correlaciones negativas entre etiquetas, que para el Vino 2, cuyas demandas presentan una correlación fuertemente positiva y, por tanto, menor capacidad de compensación.
+
+
+Se estimaron las horas de línea requeridas en los once nodos bajo producción acoplada y sin postergación. En ningún caso se superan las 84 horas disponibles por período, observándose una holgura mínima de 29,5 horas en el nodo de mayor demanda del período 2. Este resultado sugiere que, bajo esta estimación simplificada, la capacidad no sería la principal restricción de la instancia base. Sin embargo, los
+\textit{set-ups} dependientes de la secuencia y la interacción entre
+embotellado, etiquetado e inventarios podrían aumentar su utilización efectiva \cite{maccawley2022}. Por ello, se espera que el valor de la postergación se manifieste principalmente en una mejor asignación del inventario y en la reducción de pedidos atrasados, cuya penalización alcanza \$15.000 por botella y período, más que en la factibilidad básica de satisfacer la demanda.
+\subsection{Conclusiones del Análisis Exploratorio\label{sec:s6}}
+
+El análisis exploratorio entrega tres conclusiones principales para orientar la modelación. Primero, los datos y la estructura probabilística del árbol son consistentes, por lo que pueden utilizarse directamente como parámetros del
+modelo estocástico. Segundo, las diferencias en la correlación de la demanda sugieren que el valor de la postergación no será homogéneo entre productos: el Vino 1, con correlaciones predominantemente negativas entre sus etiquetas, presenta mayor potencial de \textit{risk pooling} que el Vino 2. Tercero, la holgura observada en el análisis preliminar sugiere que la capacidad no sería la principal restricción de la instancia base bajo las condiciones evaluadas. Por ello, el beneficio de la postergación podría manifestarse principalmente en una mejor asignación del inventario y en la reducción de pedidos atrasados, hipótesis que deberá validarse posteriormente mediante el modelo de optimización.

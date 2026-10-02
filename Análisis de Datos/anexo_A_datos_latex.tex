@@ -1,0 +1,163 @@
+% ============================================================================
+% Anexo A. Datos del Proyecto — código LaTeX listo para pegar
+% Requiere en el preámbulo:  \usepackage{booktabs}
+% (opcional, para acentos/ñ si no usan XeLaTeX/LuaLaTeX): \usepackage[utf8]{inputenc}
+% ============================================================================
+
+\section*{Anexo A. Datos del Proyecto}
+% Nota: usar \section, \appendix, etc. según la numeración final del informe.
+
+Esta sección reproduce, a modo de referencia autocontenida, los parámetros de
+la instancia de datos entregada por el profesor (Anexo A del enunciado del
+proyecto, archivo \texttt{P12 Anexo A Datos.xlsx}) sobre la cual se realizó el
+análisis exploratorio presentado en la Sección 4 y se construirá el modelo de
+optimización.
+
+\subsection*{A.1. Configuración del sistema de envasado}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lccl}
+    \toprule
+    \textbf{Parámetro} & \textbf{Valor} & \textbf{Unidad} & \textbf{Comentario} \\
+    \midrule
+    Líneas de producción & 1 & línea & Realiza embotellado y etiquetado, acoplados o desacoplados \\
+    Capacidad de la línea por período & 84 & horas & Tiempo disponible para producción y set-ups \\
+    Períodos del horizonte & 3 & períodos & Coinciden con las etapas del árbol de escenarios \\
+    Estanques intermedios disponibles & 20 & estanques & Número máximo utilizable en cada período \\
+    Capacidad de cada estanque & 10.000 & litros & Un estanque alimenta la línea de embotellado \\
+    Tamaño de botella (todos los vinos) & 0,75 & litros & $\approx$ 13.333 botellas por estanque \\
+    Subutilización máxima de un estanque & 100\% & fracción & No se exige uso mínimo del estanque \\
+    \bottomrule
+  \end{tabular}
+  \caption{Configuración del sistema de envasado.}
+  \label{tab:anexoA-configuracion}
+\end{table}
+
+\subsection*{A.2. Productos, etiquetas admisibles e inventarios iniciales}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Vino} & \textbf{Etiquetas admisibles} & \textbf{Productos terminados (vino, etiqueta)} \\
+    \midrule
+    Vino 1 & Etiquetas 1, 2 y 3 & (1,1), (1,2), (1,3) \\
+    Vino 2 & Etiquetas 1 y 2    & (2,1), (2,2) \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.6em}
+
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Inventario inicial} & \textbf{Valor} & \textbf{Unidad} \\
+    \midrule
+    Botellas llenas sin etiquetar (ambos vinos)     & 0 & botellas \\
+    Productos terminados (todas las combinaciones)  & 0 & botellas \\
+    Pedidos atrasados (backlog) iniciales           & 0 & botellas \\
+    \bottomrule
+  \end{tabular}
+  \caption{Productos, etiquetas admisibles e inventarios iniciales. La demanda
+  del período 1 (nodo 1) se satisface con actividades de embotellado y
+  etiquetado predefinidas, iguales a la demanda de ese nodo.}
+  \label{tab:anexoA-productos}
+\end{table}
+
+\subsection*{A.3. Tiempos y costos de operación}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Concepto} & \textbf{Tiempo (h)} & \textbf{Costo (\$)} \\
+    \midrule
+    Set-up de embotellado                        & 1,5 & 1.500 \\
+    Set-up conjunto de embotellado y etiquetado  & 1,5 & 1.500 \\
+    Set-up de etiquetado                          & 0,5 & 500   \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.6em}
+
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Tiempo unitario de proceso} & \textbf{Valor (h/botella)} \\
+    \midrule
+    Llenado (solo embotellar)              & 0,00014 \\
+    Etiquetado (solo etiquetar)            & 0,00028 \\
+    Llenado y etiquetado acoplados         & 0,00028 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.6em}
+
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Costo de inventario y servicio} & \textbf{Valor} & \textbf{Unidad} \\
+    \midrule
+    Mantener una botella llena sin etiquetar     & 10     & \$/botella$\cdot$período \\
+    Mantener una botella de producto terminado   & 15     & \$/botella$\cdot$período \\
+    Pedido atrasado (backorder)                  & 15.000 & \$/botella$\cdot$período \\
+    \bottomrule
+  \end{tabular}
+  \caption{Tiempos y costos de operación.}
+  \label{tab:anexoA-costos}
+\end{table}
+
+\subsection*{A.4. Árbol de escenarios de demanda}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{cccccc}
+    \toprule
+    \textbf{Nodo} & \textbf{Período} & \textbf{Estado} & \textbf{Nodo antecesor} & \textbf{Prob. condicional} & \textbf{Prob. del nodo} \\
+    \midrule
+    1  & 1 & Media & --- & 1,000 & 1,000 \\
+    2  & 2 & Alta  & 1   & 0,300 & 0,300 \\
+    3  & 2 & Media & 1   & 0,400 & 0,400 \\
+    4  & 2 & Baja  & 1   & 0,300 & 0,300 \\
+    5  & 3 & Alta  & 2   & 0,700 & 0,210 \\
+    6  & 3 & Media & 2   & 0,300 & 0,090 \\
+    7  & 3 & Alta  & 3   & 0,333 & 0,133 \\
+    8  & 3 & Media & 3   & 0,333 & 0,133 \\
+    9  & 3 & Baja  & 3   & 0,333 & 0,133 \\
+    10 & 3 & Media & 4   & 0,600 & 0,180 \\
+    11 & 3 & Baja  & 4   & 0,400 & 0,120 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Árbol de escenarios de demanda (3 períodos, 11 nodos). La
+  probabilidad de cada nodo es el producto de las probabilidades
+  condicionales desde la raíz; las probabilidades de los nodos terminales
+  suman 1.}
+  \label{tab:anexoA-arbol}
+\end{table}
+
+\subsection*{A.5. Demanda por producto y nodo}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lccccccccccc}
+    \toprule
+    \textbf{Producto} & N1 & N2 & N3 & N4 & N5 & N6 & N7 & N8 & N9 & N10 & N11 \\
+    \midrule
+    (1,1) & 23.525 & 53.218 & 34.328 & 18.118 & 81.856 & 45.302 & 50.426 & 31.482 & 12.538 & 30.856 & 10.426 \\
+    (1,2) & 24.328 & 15.184 & 28.525 & 45.832 & 24.546 & 31.371 & 23.569 & 40.767 & 57.965 & 20.546 & 45.569 \\
+    (1,3) & 20.368 & 38.150 & 21.080 & 6.762  & 4.920  & 25.765 & 35.043 & 25.646 & 16.248 & 10.920 & 11.043 \\
+    (2,1) & 21.080 & 39.387 & 30.368 & 12.646 & 34.115 & 22.773 & 37.045 & 27.831 & 18.616 & 24.115 & 17.045 \\
+    (2,2) & 22.991 & 38.048 & 27.991 & 14.949 & 33.440 & 22.824 & 35.085 & 25.147 & 15.209 & 23.440 & 15.085 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Demanda por producto (vino, etiqueta) y nodo, en botellas.}
+  \label{tab:anexoA-demanda}
+\end{table}
+
+La demanda de un nodo debe atenderse en ese nodo; lo no atendido queda como
+pedido atrasado. Las demandas de los productos del Vino 1 presentan
+correlaciones negativas entre sí; las del Vino 2, positivas (ver Sección 4.4).
+
+\bigskip
+\noindent\textit{Fuente de las Tablas~\ref{tab:anexoA-configuracion}
+a~\ref{tab:anexoA-demanda}: Anexo A del enunciado del proyecto P12
+(\texttt{P12 Anexo A Datos.xlsx}), entregado por el profesor. El archivo
+completo, junto con el código Python y las salidas del análisis exploratorio
+(tablas y gráficos), está disponible en la carpeta del proyecto: Capstone /
+Análisis de Datos [agregar enlace a la carpeta compartida si se desea].}
