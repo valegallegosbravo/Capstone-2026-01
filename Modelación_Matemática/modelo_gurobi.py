@@ -376,7 +376,7 @@ def plan_por_nodo(inst: Instancia, v: dict) -> pd.DataFrame:
 
 def main():
     # argumentos opcionales
-    # si no se entregan, corre caso base y el barrido completo
+    # si no se entregan, corre caso base (MTS), postergación total y el barrido completo
     parser = argparse.ArgumentParser()
     parser.add_argument("--C", type=float, help="horas de línea por nodo")
     parser.add_argument(
@@ -390,22 +390,31 @@ def main():
     salida.mkdir(exist_ok=True)
     pd.set_option("display.width", 200)
 
-    # op 1: una sola configuración
+    # op 1: una sola configuración (lo no especificado toma el valor del caso base)
     if args.C is not None or args.PL is not None:
         C = args.C if args.C is not None else 84
-        PL = args.PL if args.PL is not None else len(inst.P)
+        PL = args.PL if args.PL is not None else 0
         _, v, res = resolver(inst, C, PL, args.verbose)
         print(pd.Series(res).to_string())
         print(plan_por_nodo(inst, v).to_string(index=False))
         return
 
-    # op 2: caso base + barrido
-    _, v, res = resolver(inst, 84, len(inst.P), args.verbose)
-    print("=== Caso base (C=84, PL=5) ===")
-    print(pd.Series(res).to_string())
-    plan = plan_por_nodo(inst, v)
-    plan.to_csv(salida / "plan_caso_base.csv", index=False)
-    print(plan.to_string(index=False))
+    # op 2: caso base (MTS) + postergación total + barrido
+    # caso base = sin postergación (PL=0): todo se embotella y etiqueta acoplado
+    # en a(n), antes de conocer la demanda de n -> full MTS.
+    extremos = [
+        ("Caso base MTS (C=84, PL=0)", 0, "plan_caso_base_MTS.csv"),
+        (f"Postergación total (C=84, PL={len(inst.P)})", len(
+            inst.P), "plan_postergacion_total.csv"),
+    ]
+    for titulo, PL, archivo in extremos:
+        _, v, res = resolver(inst, 84, PL, args.verbose)
+        print(f"=== {titulo} ===")
+        print(pd.Series(res).to_string())
+        plan = plan_por_nodo(inst, v)
+        plan.to_csv(salida / archivo, index=False)
+        print(plan.to_string(index=False))
+        print()
 
     # Barrido de configuraciones (niveles de referencia de hoja Niveles del excel)
     filas = []
@@ -414,7 +423,7 @@ def main():
             _, _, r = resolver(inst, C, PL)
             filas.append(r)
     df = pd.DataFrame(filas)
-    # kpi 3
+    # kpi 3: V^POST(PL; C) = CTE*(0; C) - CTE*(PL; C), con PL=0 (MTS) como referencia
     df["V_POST"] = df.groupby("C")["CTE"].transform("first") - df["CTE"]
     df.to_csv(salida / "barrido_C_PL.csv", index=False)
     print("\n=== Barrido C x PL ===")
