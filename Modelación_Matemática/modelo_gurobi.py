@@ -76,7 +76,14 @@ def _valor(df: pd.DataFrame, texto: str, col: str = "valor") -> float:
 # leemos excel y creamos instancias
 
 
-def cargar_instancia() -> Instancia:
+INICIOS = ("cubierta", "cero")
+
+
+def cargar_instancia(inicio: str = "cubierta") -> Instancia:
+    # inicio = "cubierta": la demanda del nodo 1 se cubre con producción predefinida (Excel)
+    # inicio = "cero": sin producción predefinida (W_bl0 = W_b0 = 0), sólo para comparar
+    if inicio not in INICIOS:
+        raise ValueError(f"inicio debe ser uno de {INICIOS}, no '{inicio}'")
     datos = cargar_todo()
     conf = datos["configuracion"]
     setups = datos["setups"]
@@ -112,6 +119,7 @@ def cargar_instancia() -> Instancia:
     s_bl0 = _valor(inv0, "terminados")
     b_bl0 = _valor(inv0, "atrasados")
     P = [(i, j) for i in I for j in J if A[i, j] == 1]
+    raiz = next(n for n in N if a[n] == N_AUX)
 
     return Instancia(
         I=I, J=J, N=N, N_etapa=N_etapa, a=a, D=D, p=p, A=A,
@@ -136,8 +144,11 @@ def cargar_instancia() -> Instancia:
         C_sbl=_valor(costos, "producto terminado"),
         C_bbl=_valor(costos, "backorder"),
         # cond. iniciales
+        # según el Excel (hojas Lectura y Productos), la demanda del nodo 1 se
+        # cubre con embotellado y etiquetado predefinidos iguales a esa demanda:
+        # W_bl0 = D del nodo raíz (el que tiene a(n) = n_aux); W_b0 queda en 0
         W_b0={i: 0.0 for i in I},
-        W_bl0={ij: 0.0 for ij in P},
+        W_bl0={(i, j): D[i, j, raiz] if inicio == "cubierta" else 0.0 for i, j in P},
         S_b0={i: s_b0 for i in I},
         S_bl0={ij: s_bl0 for ij in P},
         B_bl0={ij: b_bl0 for ij in P},
@@ -308,6 +319,10 @@ def construir_modelo(inst: Instancia, C: float, PL: int, verbose: bool = False):
 # resuelve para C, PL  y calcula kpi1 y kpi2
 def resolver(inst: Instancia, C: float, PL: int, verbose: bool = False, time_limit: float | None = None):
     m, v, costos = construir_modelo(inst, C, PL, verbose)
+    # tolerancia estricta (por defecto es 1e-4) para que el ahorro entre niveles
+    # de PL no se confunda con error numérico, y semilla fija para reproducibilidad
+    m.Params.MIPGap = 1e-8
+    m.Params.Seed = 0
     # lim de tiempo
     if time_limit is not None:
         m.Params.TimeLimit = time_limit
@@ -343,8 +358,12 @@ def resolver(inst: Instancia, C: float, PL: int, verbose: bool = False, time_lim
         "C_FG": esperado["FG"],
         "C_BO": esperado["BO"],
         "NS_%": ns,  # kpi 2
-        # comparamos con 0.5 por si la binaria vale 0.999...
-        "productos_postergados": [ij for ij in P if v["z_pos"][ij].X > 0.5],
+        # habilitados: z_pos = 1 (comparamos con 0.5 por si la binaria vale 0.999...)
+        "productos_habilitados": [ij for ij in P if v["z_pos"][ij].X > 0.5],
+        # postergados: los que efectivamente se etiquetan desde WIP (w_l > 0 en algún nodo)
+        "productos_postergados": [
+            (i, j) for i, j in P if any(v["w_l"][i, j, n].X > 1e-6 for n in N)
+        ],
         "tiempo_s": m.Runtime,
     }
     return m, v, resumen
@@ -371,20 +390,106 @@ def plan_por_nodo(inst: Instancia, v: dict) -> pd.DataFrame:
     ])
     return df.merge(por_vino, on=["nodo", "vino"]).round(2)
 
+
+# resultados por trayectoria
+
+def trayectorias(inst: Instancia) -> list[list[int]]:
+    # cada camino desde la raíz hasta un nodo terminal (nodo sin sucesores)
+    padres = set(inst.a.values())
+    terminales = [n for n in inst.N if n not in padres]
+    caminos = []
+    for t in terminales:
+        camino = [t]
+        while inst.a[camino[0]] != N_AUX:
+            camino.insert(0, inst.a[camino[0]])
+        caminos.append(camino)
+    return caminos
+
+
+def costo_nodo(inst: Instancia, v: dict, n: int) -> float:
+    # mismas fórmulas que (eq:costo-setup)-(eq:costo-bo), evaluadas en la solución
+    I, P, A = inst.I, inst.P, inst.A
+    setup = (inst.C_zb * sum(v["z_b"][i, n].X for i in I)
+             + inst.C_zbl * sum(A[i, j] * v["z_bl"][i, j, n].X for i, j in P)
+             + inst.C_zl * sum(A[i, j] * v["z_l"][i, j, n].X for i, j in P))
+    wip = inst.C_sb * sum(v["s_b"][i, n].X for i in I)
+    fg = inst.C_sbl * sum(A[i, j] * v["s_bl"][i, j, n].X for i, j in P)
+    bo = inst.C_bbl * sum(A[i, j] * v["b_bl"][i, j, n].X for i, j in P)
+    return setup + wip + fg + bo
+
+
+def evaluar_trayectorias(inst: Instancia, v: dict) -> pd.DataFrame:
+    # costo sin ponderar, nivel de servicio (fifo, igual que resolver) y atraso final
+    # por trayectoria; la media ponderada por probabilidad del costo debe ser el CTE
+    P = inst.P
+    filas = []
+    for camino in trayectorias(inst):
+        terminal = camino[-1]
+        dem = sum(inst.D[i, j, n] for i, j in P for n in camino)
+        atr = sum(min(inst.D[i, j, n], v["b_bl"][i, j, n].X) for i, j in P for n in camino)
+        # productos etiquetados desde inventario sin etiquetar en cada nodo del camino
+        etiquetado_wip = "; ".join(
+            f"n{n}:" + "".join(f"({i},{j})" for i, j in P if v["w_l"][i, j, n].X > 1e-6)
+            for n in camino
+        )
+        filas.append({
+            "trayectoria": "-".join(map(str, camino)),
+            "nodo_terminal": terminal,
+            "probabilidad": inst.p[terminal],
+            "costo": sum(costo_nodo(inst, v, n) for n in camino),
+            "NS_%": 100.0 * (1 - atr / dem),
+            "atraso_final": sum(v["b_bl"][i, j, terminal].X for i, j in P),
+            "etiquetado_wip": etiquetado_wip,
+        })
+    return pd.DataFrame(filas)
+
+
+def resumir_trayectorias(df: pd.DataFrame) -> dict:
+    p, c = df["probabilidad"], df["costo"]
+    media = (p * c).sum()
+    desv = ((p * (c - media) ** 2).sum()) ** 0.5
+    return {
+        "media_costo": media,
+        "desv_costo": desv,
+        "CV": desv / media if media else float("nan"),
+        "costo_min": c.min(),
+        "costo_max": c.max(),
+        "NS_min_%": df["NS_%"].min(),
+        "NS_max_%": df["NS_%"].max(),
+    }
+
+
+def barrido(inst: Instancia) -> pd.DataFrame:
+    # niveles de referencia de hoja Niveles del excel
+    filas = []
+    for C in [21, 42, 63, 84]:
+        for PL in [0, 2, 3, 4, 5]:
+            _, _, r = resolver(inst, C, PL)
+            filas.append(r)
+    df = pd.DataFrame(filas)
+    # kpi 3: V^POST(PL; C) = CTE*(0; C) - CTE*(PL; C), con PL=0 (MTS) como referencia
+    df["V_POST"] = df.groupby("C")["CTE"].transform("first") - df["CTE"]
+    return df
+
 # ejecución
 
 
 def main():
     # argumentos opcionales
-    # si no se entregan, corre caso base (MTS), postergación total y el barrido completo
+    # si no se entregan, corre caso base (MTS), postergación total, el barrido completo
+    # (ambas condiciones iniciales), la comparación de condición inicial y las trayectorias
     parser = argparse.ArgumentParser()
     parser.add_argument("--C", type=float, help="horas de línea por nodo")
     parser.add_argument(
         "--PL", type=int, help="máx. productos con postergación")
+    parser.add_argument("--inicio", choices=INICIOS, default="cubierta",
+                        help="condición inicial: demanda del nodo 1 cubierta (Excel) o cero")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
-    inst = cargar_instancia()
+    inst = cargar_instancia(args.inicio)
+    # sufijo para no sobrescribir los archivos del caso "cubierta"
+    sufijo = "" if args.inicio == "cubierta" else f"_inicio_{args.inicio}"
     # guardado
     salida = Path(__file__).resolve().parent / "resultados"
     salida.mkdir(exist_ok=True)
@@ -403,31 +508,58 @@ def main():
     # caso base = sin postergación (PL=0): todo se embotella y etiqueta acoplado
     # en a(n), antes de conocer la demanda de n -> full MTS.
     extremos = [
-        ("Caso base MTS (C=84, PL=0)", 0, "plan_caso_base_MTS.csv"),
+        ("Caso base MTS (C=84, PL=0)", 0, f"plan_caso_base_MTS{sufijo}.csv"),
         (f"Postergación total (C=84, PL={len(inst.P)})", len(
-            inst.P), "plan_postergacion_total.csv"),
+            inst.P), f"plan_postergacion_total{sufijo}.csv"),
     ]
     for titulo, PL, archivo in extremos:
         _, v, res = resolver(inst, 84, PL, args.verbose)
-        print(f"=== {titulo} ===")
+        print(f"=== {titulo} [inicio {args.inicio}] ===")
         print(pd.Series(res).to_string())
         plan = plan_por_nodo(inst, v)
         plan.to_csv(salida / archivo, index=False)
         print(plan.to_string(index=False))
         print()
 
-    # Barrido de configuraciones (niveles de referencia de hoja Niveles del excel)
-    filas = []
-    for C in [21, 42, 63, 84]:
-        for PL in [0, 2, 3, 4, 5]:
-            _, _, r = resolver(inst, C, PL)
-            filas.append(r)
-    df = pd.DataFrame(filas)
-    # kpi 3: V^POST(PL; C) = CTE*(0; C) - CTE*(PL; C), con PL=0 (MTS) como referencia
-    df["V_POST"] = df.groupby("C")["CTE"].transform("first") - df["CTE"]
-    df.to_csv(salida / "barrido_C_PL.csv", index=False)
-    print("\n=== Barrido C x PL ===")
-    print(df.drop(columns=["status", "gap"]).round(1).to_string(index=False))
+    # Barrido de configuraciones, para ambas condiciones iniciales
+    # (barrido_C_PL.csv = cubierta; barrido_C_PL_inicio_cero.csv = cero)
+    instancias = {ini: (inst if ini == args.inicio else cargar_instancia(ini)) for ini in INICIOS}
+    barridos = {}
+    for ini, inst_ini in instancias.items():
+        df = barrido(inst_ini)
+        nombre = "barrido_C_PL.csv" if ini == "cubierta" else f"barrido_C_PL_inicio_{ini}.csv"
+        df.to_csv(salida / nombre, index=False)
+        barridos[ini] = df
+        print(f"\n=== Barrido C x PL [inicio {ini}] ===")
+        print(df.drop(columns=["status", "gap"]).round(1).to_string(index=False))
+
+    # comparación de condición inicial: extremos PL=0 y PL=5 para cada C
+    comp = []
+    for ini, df in barridos.items():
+        for C, g in df.groupby("C"):
+            pl0, pl5 = g.set_index("PL").loc[0], g.set_index("PL").loc[len(inst.P)]
+            comp.append({"C": C, "inicio": ini, "CTE_PL0": pl0["CTE"], "CTE_PL5": pl5["CTE"],
+                         "NS_PL0": pl0["NS_%"], "NS_PL5": pl5["NS_%"]})
+    comp = pd.DataFrame(comp).sort_values(["C", "inicio"])
+    comp.to_csv(salida / "comparacion_condicion_inicial.csv", index=False)
+    print("\n=== Comparación de condición inicial ===")
+    print(comp.round(2).to_string(index=False))
+
+    # resultados por trayectoria (C=84, PL=0 y PL=5, ambas condiciones iniciales)
+    resumen = []
+    for ini, inst_ini in instancias.items():
+        for PL in [0, len(inst.P)]:
+            C = 84
+            m, v, res = resolver(inst_ini, C, PL)
+            tray = evaluar_trayectorias(inst_ini, v)
+            tray.to_csv(salida / f"trayectorias_C{C}_PL{PL}_{ini}.csv", index=False)
+            fila = {"C": C, "PL": PL, "inicio": ini, "CTE": res["CTE"], "status": res["status"]}
+            fila.update(resumir_trayectorias(tray))
+            resumen.append(fila)
+    resumen = pd.DataFrame(resumen)
+    resumen.to_csv(salida / "resumen_trayectorias.csv", index=False)
+    print("\n=== Resumen por trayectoria ===")
+    print(resumen.round(4).to_string(index=False))
 
 
 if __name__ == "__main__":
